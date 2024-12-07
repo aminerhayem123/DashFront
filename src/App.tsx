@@ -13,7 +13,7 @@ import { CartProvider } from './contexts/CartContext';
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import ForgotPassword from './pages/ForgotPassword';
-
+import Packs from './pages/Packs';
 const AppLayout = () => {
   const location = useLocation();
   const isDashManager = location.pathname.toLowerCase() === '/dashmanager';
@@ -59,6 +59,14 @@ const AppLayout = () => {
               </ProtectedRoute>
             }
           />
+          <Route
+          path="/packs"
+          element={
+            <ProtectedRoute>
+              <Packs />
+            </ProtectedRoute>
+          }
+        />
           <Route
             path="/dashmanager"
             element={

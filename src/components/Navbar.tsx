@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, User, LogIn } from 'lucide-react';
+import { ShoppingCart, User, LogIn, Package } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -68,7 +68,11 @@ export default function Navbar() {
                 </span>
               )}
             </Link>
-
+            <Link to="/packs" className="p-2 hover:bg-gray-100 rounded-md flex items-center space-x-1 text-gray-600">
+              <Package className="h-5 w-5" />
+              <span>Buy Packs</span>
+            </Link>
+  
             {!isAuthenticated ? (
               <>
                 <Link to="/login" className="flex items-center space-x-1 text-gray-600 hover:text-indigo-600">
