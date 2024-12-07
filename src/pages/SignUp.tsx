@@ -1,6 +1,6 @@
 import { useState, ChangeEvent, FormEvent } from 'react';
 import { Link } from 'react-router-dom';
-import { UserPlus } from 'lucide-react';
+import { UserPlus, Eye, EyeOff } from 'lucide-react';
 
 interface FormData {
   name: string;
@@ -19,28 +19,29 @@ export default function SignUp() {
 
   const [error, setError] = useState<string>('');
   const [success, setSuccess] = useState<string>('');
+  const [passwordVisible, setPasswordVisible] = useState<boolean>(false);
+  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState<boolean>(false);
+
   const apiUrl = import.meta.env.VITE_API_URL;
 
   // Handle input changes
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-    setError(''); // Clear error on input change
-    setSuccess(''); // Clear success on input change
+    setError('');
+    setSuccess('');
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
+
     const { name, email, password, confirmPassword } = formData;
-  
-    // Validate password confirmation
+
     if (password !== confirmPassword) {
       setError('Passwords do not match.');
       return;
     }
-  
-    // Make API call to backend using the environment variable
+
     try {
       const response = await fetch(`${apiUrl}/signup`, {
         method: 'POST',
@@ -49,7 +50,7 @@ export default function SignUp() {
         },
         body: JSON.stringify({ name, email, password }),
       });
-  
+
       if (response.ok) {
         setSuccess('Account created successfully! You can now sign in.');
         setFormData({ name: '', email: '', password: '', confirmPassword: '' });
@@ -61,7 +62,7 @@ export default function SignUp() {
       setError('Server error. Please try again later.');
     }
   };
-  
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
@@ -123,16 +124,23 @@ export default function SignUp() {
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Password
               </label>
-              <div className="mt-1">
+              <div className="mt-1 relative">
                 <input
                   id="password"
                   name="password"
-                  type="password"
+                  type={passwordVisible ? 'text' : 'password'}
                   value={formData.password}
                   onChange={handleChange}
                   required
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                 />
+                <button
+                  type="button"
+                  onClick={() => setPasswordVisible(!passwordVisible)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500"
+                >
+                  {passwordVisible ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
               </div>
             </div>
 
@@ -140,16 +148,23 @@ export default function SignUp() {
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
                 Confirm Password
               </label>
-              <div className="mt-1">
+              <div className="mt-1 relative">
                 <input
                   id="confirmPassword"
                   name="confirmPassword"
-                  type="password"
+                  type={confirmPasswordVisible ? 'text' : 'password'}
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   required
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                 />
+                <button
+                  type="button"
+                  onClick={() => setConfirmPasswordVisible(!confirmPasswordVisible)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500"
+                >
+                  {confirmPasswordVisible ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
               </div>
             </div>
 
