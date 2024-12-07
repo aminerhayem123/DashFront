@@ -1,4 +1,3 @@
-import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -11,26 +10,61 @@ import DashboardDetails from './pages/DashboardDetails';
 import Checkout from './pages/Checkout';
 import DashManager from './pages/DashManager';
 import { CartProvider } from './contexts/CartContext';
+import { AuthProvider } from './contexts/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
 
 const AppLayout = () => {
   const location = useLocation();
-  // Check if the current route is "/dashmanager" (case-sensitive path)
   const isDashManager = location.pathname.toLowerCase() === '/dashmanager';
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Only show Navbar and Footer if not on /dashmanager */}
       {!isDashManager && <Navbar />}
       <main className="flex-grow">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
-          <Route path="/cart" element={<Cart />} />
-          <Route path="/checkout" element={<Checkout />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/dashboard/:id" element={<DashboardDetails />} />
-          <Route path="/dashmanager" element={<DashManager />} />
+          <Route
+            path="/cart"
+            element={
+              <ProtectedRoute>
+                <Cart />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/checkout"
+            element={
+              <ProtectedRoute>
+                <Checkout />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/:id"
+            element={
+              <ProtectedRoute>
+                <DashboardDetails />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashmanager"
+            element={
+              <ProtectedRoute allowedRoles={['super_user']}>
+                <DashManager />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </main>
       {!isDashManager && <Footer />}
@@ -40,11 +74,13 @@ const AppLayout = () => {
 
 const App = () => {
   return (
-    <CartProvider>
-      <Router>
-        <AppLayout />
-      </Router>
-    </CartProvider>
+    <AuthProvider>
+      <CartProvider>
+        <Router>
+          <AppLayout />
+        </Router>
+      </CartProvider>
+    </AuthProvider>
   );
 };
 

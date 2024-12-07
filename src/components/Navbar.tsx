@@ -1,10 +1,53 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingCart, User, LogIn } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function Navbar() {
   const { state } = useCart();
+  const { isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
+
+  // State to toggle the profile dropdown
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  // Refs for detecting clicks outside the dropdown and the profile button
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
+  const buttonRef = useRef<HTMLButtonElement | null>(null); // Reference to the profile button
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
+
+  const toggleDropdown = () => {
+    setDropdownOpen((prevState) => !prevState); // Toggle dropdown visibility on click
+  };
+
+  // Close dropdown if clicked outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(event.target as Node)
+      ) {
+        setDropdownOpen(false); // Close dropdown if clicked outside
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const handleMouseLeave = () => {
+    // Close dropdown when the mouse leaves the profile button or dropdown
+    setDropdownOpen(false);
+  };
 
   return (
     <nav className="bg-white shadow-lg">
@@ -25,13 +68,45 @@ export default function Navbar() {
                 </span>
               )}
             </Link>
-            <Link to="/login" className="flex items-center space-x-1 text-gray-600 hover:text-indigo-600">
-              <LogIn className="h-5 w-5" />
-              <span>Login</span>
-            </Link>
-            <Link to="/signup" className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">
-              Sign Up
-            </Link>
+
+            {!isAuthenticated ? (
+              <>
+                <Link to="/login" className="flex items-center space-x-1 text-gray-600 hover:text-indigo-600">
+                  <LogIn className="h-5 w-5" />
+                  <span>Login</span>
+                </Link>
+                <Link to="/signup" className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">
+                  Sign Up
+                </Link>
+              </>
+            ) : (
+              <div className="flex items-center space-x-4 relative">
+                <button
+                  ref={buttonRef}
+                  onClick={toggleDropdown}
+                  className="text-gray-600 hover:text-indigo-600"
+                >
+                  <User className="h-5 w-5" />
+                </button>
+
+                {dropdownOpen && (
+                  <div
+                    ref={dropdownRef}
+                    className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-md py-1"
+                    onMouseLeave={handleMouseLeave} // Close dropdown when mouse leaves the dropdown
+                    style={{ top: '100%', right: 0 }} // Ensure it positions just below the profile button
+                  >
+                    <Link to="/profile" className="block px-4 py-2 text-sm text-gray-600">Profile</Link>
+                    <button
+                      onClick={handleLogout}
+                      className="block px-4 py-2 text-sm text-gray-600 w-full text-left"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
