@@ -1,17 +1,16 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, LogOut, LayoutDashboard } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 import AddDashboardModal from './AddDashboardModal';
-
 const DashManager = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
-
+  const { logout } = useAuth();
   const handleLogout = () => {
-    // Handle logout logic here
+    logout();
     navigate('/login');
   };
-
   return (
     <div className="min-h-screen flex flex-col">
       {/* Custom Navigation Bar */}
@@ -24,7 +23,6 @@ const DashManager = () => {
                 <span className="text-2xl font-bold text-indigo-600">DashManager</span>
               </div>
             </div>
-
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => setIsModalOpen(true)}
@@ -44,7 +42,6 @@ const DashManager = () => {
           </div>
         </div>
       </div>
-
       {/* Main Content */}
       <div className="flex-1 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -56,7 +53,6 @@ const DashManager = () => {
           </div>
         </div>
       </div>
-
       <AddDashboardModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -64,5 +60,4 @@ const DashManager = () => {
     </div>
   );
 };
-
 export default DashManager;

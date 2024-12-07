@@ -4,26 +4,35 @@ import { useAuth } from '../contexts/AuthContext';
 interface ProtectedRouteProps {
   children: React.ReactNode;
   allowedRoles?: string[];
-  publicRoute?: boolean; // A flag to allow access for logged-in users to public routes (like login/signup)
 }
 
-export default function ProtectedRoute({ children, allowedRoles, publicRoute }: ProtectedRouteProps) {
+export default function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
   const { isAuthenticated, userRole } = useAuth();
   const location = useLocation();
 
-  // Allow access to public routes (like login/signup) for non-authenticated users
-  if (publicRoute && isAuthenticated) {
-    return <Navigate to="/" replace />;
-  }
+  console.log('Protected Route Check:', {
+    isAuthenticated,
+    userRole,
+    allowedRoles,
+    currentPath: location.pathname
+  });
 
-  // Redirect to login if user is not authenticated and trying to access protected route
   if (!isAuthenticated) {
+    console.log('User is not authenticated, redirecting to login');
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Handle role-based access
-  if (allowedRoles && userRole && !allowedRoles.includes(userRole)) {
-    return <Navigate to="/" replace />;
+  if (allowedRoles && userRole) {
+    console.log('Checking role access:', {
+      userRole,
+      allowedRoles,
+      hasAccess: allowedRoles.includes(userRole)
+    });
+    
+    if (!allowedRoles.includes(userRole)) {
+      console.log('Access denied: User role', userRole, 'not in allowed roles:', allowedRoles);
+      return <Navigate to="/" replace />;
+    }
   }
 
   return <>{children}</>;

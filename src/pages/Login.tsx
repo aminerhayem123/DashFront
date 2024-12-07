@@ -1,5 +1,5 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { LogIn, Eye, EyeOff } from 'lucide-react';  // Import Eye and EyeOff icons
+import { LogIn, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useState, useEffect } from 'react';
 
@@ -10,11 +10,10 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [passwordVisible, setPasswordVisible] = useState(false);  // State to control password visibility
+  const [passwordVisible, setPasswordVisible] = useState(false);
   const apiUrl = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
-    // Redirect to home if user is already authenticated
     if (isAuthenticated) {
       navigate('/');
     }
@@ -23,6 +22,7 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    
     try {
       const response = await fetch(`${apiUrl}/login`, {
         method: 'POST',
@@ -31,16 +31,28 @@ export default function Login() {
         },
         body: JSON.stringify({ email, password }),
       });
+
       const data = await response.json();
+      
       if (response.ok) {
-        login(data.token, data.role);
-        const from = (location.state as any)?.from?.pathname || '/';
-        navigate(from);
+        console.log('Login response:', data); // Debug log
+        console.log('User role from response:', data.user.role); // Debug log
+        
+        login(data.token, data.user.role);
+        
+        // If user is super_user, redirect to dashmanager
+        if (data.user.role === 'super_user') {
+          navigate('/dashmanager');
+        } else {
+          const from = (location.state as any)?.from?.pathname || '/';
+          navigate(from);
+        }
       } else {
         setError(data.error || 'Login failed');
       }
     } catch (err) {
       setError('An error occurred during login');
+      console.error('Login error:', err);
     }
   };
 
