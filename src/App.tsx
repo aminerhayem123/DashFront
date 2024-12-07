@@ -12,6 +12,7 @@ import DashManager from './pages/DashManager';
 import { CartProvider } from './contexts/CartContext';
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import ForgotPassword from './pages/ForgotPassword';
 
 const AppLayout = () => {
   const location = useLocation();
@@ -25,6 +26,7 @@ const AppLayout = () => {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />  {/* Add route for Forgot Password */}
           <Route
             path="/cart"
             element={
