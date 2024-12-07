@@ -5,6 +5,8 @@ export default function ForgotPassword() {
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const apiUrl = import.meta.env.VITE_API_URL;
+
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -20,7 +22,7 @@ export default function ForgotPassword() {
     }
 
     try {
-      const response = await fetch('http://localhost:3000/forgot-password', {
+      const response = await fetch(`${apiUrl}/forgot-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

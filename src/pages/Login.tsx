@@ -11,6 +11,7 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [passwordVisible, setPasswordVisible] = useState(false);  // State to control password visibility
+  const apiUrl = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     // Redirect to home if user is already authenticated
@@ -23,7 +24,7 @@ export default function Login() {
     e.preventDefault();
     setError('');
     try {
-      const response = await fetch('http://localhost:3000/login', {
+      const response = await fetch(`${apiUrl}/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
