@@ -1,10 +1,8 @@
-import React from 'react';
 import { 
   LayoutGrid, // React
   Box, // Vue
   Layers, // Angular
   Code2, // TypeScript
-  Bootstrap, // Bootstrap
   Code, // HTML/CSS
   Palette, // Tailwind
 } from 'lucide-react';
