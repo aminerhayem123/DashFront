@@ -12,6 +12,13 @@ export default function ForgotPassword() {
     setError('');
     setSuccess('');
 
+    // Simple email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError('Please enter a valid email address.');
+      return;
+    }
+
     try {
       const response = await fetch('http://localhost:3000/forgot-password', {
         method: 'POST',
@@ -24,6 +31,9 @@ export default function ForgotPassword() {
       const data = await response.json();
       if (response.ok) {
         setSuccess('If the email is registered, you will receive a password reset link shortly.');
+        setTimeout(() => {
+          navigate('/login'); // Redirect to login after 3 seconds
+        }, 3000);
       } else {
         setError(data.error || 'An error occurred while sending the reset link.');
       }
