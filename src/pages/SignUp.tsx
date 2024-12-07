@@ -1,6 +1,7 @@
-import { useState, ChangeEvent, FormEvent } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, ChangeEvent, FormEvent, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { UserPlus, Eye, EyeOff } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 interface FormData {
   name: string;
@@ -10,6 +11,8 @@ interface FormData {
 }
 
 export default function SignUp() {
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
@@ -23,6 +26,13 @@ export default function SignUp() {
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState<boolean>(false);
 
   const apiUrl = import.meta.env.VITE_API_URL;
+
+  // Prevent access to sign-up page if the user is already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/');
+    }
+  }, [isAuthenticated, navigate]);
 
   // Handle input changes
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
