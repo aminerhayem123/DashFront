@@ -117,15 +117,6 @@ const Packs: React.FC = () => {
             </div>
           ))}
         </div>
-
-        <div className="mt-16 text-center">
-          <p className="text-gray-500 text-sm">
-            All packs come with a 30-day money-back guarantee. Need help choosing?{' '}
-            <a href="#" className="text-indigo-600 hover:text-indigo-500">
-              Contact our support team
-            </a>
-          </p>
-        </div>
       </div>
     </div>
   );
