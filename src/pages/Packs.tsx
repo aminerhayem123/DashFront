@@ -1,7 +1,8 @@
-import React from 'react';
-import { Coins, CreditCard, Shield, Zap } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Coins, Shield } from 'lucide-react';
 
 type Pack = {
+  id: number; // Add id if needed for key purposes
   name: string;
   coins: number;
   price: number;
@@ -11,51 +12,42 @@ type Pack = {
   icon: React.ReactNode;
 };
 
-const packs: Pack[] = [
-  {
-    name: 'Bronze Pack',
-    coins: 30,
-    price: 30,
-    color: 'bg-gradient-to-br from-yellow-700 to-yellow-500', // Brown gradient
-    features: ['Access to 1 template', 'No support', 'No customization'],
-    icon: <Coins className="w-8 h-8" />,
-  },
-  {
-    name: 'Silver Pack',
-    coins: 120,
-    price: 100,
-    color: 'bg-gradient-to-br from-gray-600 to-gray-400',
-    features: ['Access to 3 templates', 'No support', 'No customization'],
-    icon: <Shield className="w-8 h-8" />,
-  },
-  {
-    name: 'Gold Pack',
-    coins: 120,
-    price: 180,
-    color: 'bg-gradient-to-br from-yellow-600 to-yellow-400',
-    popular: true,
-    features: [
-      'Access to 4 templates',
-      '30-day support',
-      'No customization',
-    ],
-    icon: <Zap className="w-8 h-8" />,
-  },
-  {
-    name: 'Diamond Pack',
-    coins: 220,
-    price: 300,
-    color: 'bg-gradient-to-br from-blue-600 to-blue-400',
-    features: [
-      'Access to 3 templates',
-      'Lifetime support',
-      'Full customization access',
-    ],
-    icon: <CreditCard className="w-8 h-8" />,
-  },
-];
-
 const Packs: React.FC = () => {
+  const [packs, setPacks] = useState<Pack[]>([]);
+  const apiUrl = import.meta.env.VITE_API_URL;
+
+  useEffect(() => {
+    const fetchPacks = async () => {
+      try {
+        const response = await fetch(`${apiUrl}/packs`); // Adjust the URL as per your backend setup
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+
+        // Map the backend data to match the structure of Pack type
+        const formattedPacks = data.map((pack: any, index: number) => ({
+          id: pack.id,
+          name: pack.name,
+          coins: pack.nb_coins,
+          price: pack.price,
+          color:
+            index === 0
+              ? 'bg-gradient-to-br from-yellow-700 to-yellow-500'
+              : 'bg-gradient-to-br from-gray-600 to-gray-400', // Add more conditions for other colors
+          features: pack.features,
+          icon: index === 0 ? <Coins className="w-8 h-8" /> : <Shield className="w-8 h-8" />,
+        }));
+
+        setPacks(formattedPacks);
+      } catch (error) {
+        console.error('Error fetching packs:', error);
+      }
+    };
+
+    fetchPacks();
+  }, []);
+
   const handlePurchase = (pack: Pack) => {
     alert(`You purchased the ${pack.name} for ${pack.price} TND!`);
   };
@@ -72,22 +64,13 @@ const Packs: React.FC = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mt-16">
+        <div className="flex justify-center gap-8 mt-16">
           {packs.map((pack) => (
             <div
-              key={pack.name}
-              className={`relative rounded-2xl overflow-hidden transition-all duration-300 transform hover:scale-105 ${
-                pack.popular ? 'ring-4 ring-indigo-500 ring-opacity-50' : ''
-              }`}
+              key={pack.id}
+              className={`relative rounded-2xl overflow-hidden transition-all duration-300 transform hover:scale-105`}
             >
-              {pack.popular && (
-                <div className="absolute top-0 right-0 bg-indigo-500 text-white px-4 py-1 rounded-bl-lg text-sm font-medium">
-                  Popular
-                </div>
-              )}
-              <div
-                className={`${pack.color} p-8 text-white h-full flex flex-col`}
-              >
+              <div className={`${pack.color} p-8 text-white h-full flex flex-col`}>
                 <div className="flex items-center justify-between mb-4">
                   <div className="p-2 bg-white bg-opacity-20 rounded-lg">
                     {pack.icon}
@@ -99,9 +82,7 @@ const Packs: React.FC = () => {
                 </div>
 
                 <h2 className="text-2xl font-bold mb-2">{pack.name}</h2>
-                <p className="text-xl mb-6 opacity-90">
-                  {pack.coins} Coins
-                </p>
+                <p className="text-xl mb-6 opacity-90">{pack.coins} Coins</p>
 
                 <div className="flex-grow">
                   <ul className="space-y-3 mb-8">
