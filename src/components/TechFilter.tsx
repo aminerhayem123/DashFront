@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 
 const technologies = [
+  { name: 'All', icon: null, color: 'text-gray-500' }, // All option
   { name: 'React', icon: LayoutGrid, color: 'text-blue-500' },
   { name: 'Vue', icon: Box, color: 'text-green-500' },
   { name: 'Angular', icon: Layers, color: 'text-red-500' },
@@ -35,7 +36,7 @@ export default function TechFilter({ selectedTech, onTechChange }: TechFilterPro
                 ? 'bg-gray-100 shadow-inner' 
                 : 'hover:bg-gray-50'}`}
           >
-            <Icon className={`h-5 w-5 ${tech.color}`} />
+            {Icon && <Icon className={`h-5 w-5 ${tech.color}`} />}
             <span className={selectedTech === tech.name ? 'font-semibold' : ''}>
               {tech.name}
             </span>
