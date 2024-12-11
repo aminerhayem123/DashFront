@@ -29,6 +29,7 @@ export default function Home() {
           throw new Error('Failed to fetch dashboards');
         }
         const data = await response.json();
+        console.log('Fetched dashboards:', data); // Add this log to debug
         setDashboards(data);
       } catch (err) {
         setError('Failed to load dashboards');
@@ -84,18 +85,21 @@ export default function Home() {
 
         {/* Dashboard Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredDashboards.map(dashboard => (
-            <DashboardCard
-              key={dashboard.id}
-              id={dashboard.id}
-              title={dashboard.name}
-              description={dashboard.description}
-              price={dashboard.price_coins}
-              image={dashboard.preview_url}
-              tech={dashboard.tech}
-              rating={dashboard.rating || 0}
-            />
-          ))}
+          {filteredDashboards.map(dashboard => {
+            console.log('Dashboard rating:', dashboard.rating); // Add this log to debug
+            return (
+              <DashboardCard
+                key={dashboard.id}
+                id={dashboard.id}
+                title={dashboard.name}
+                description={dashboard.description}
+                price={dashboard.price_coins}
+                image={dashboard.preview_url}
+                tech={dashboard.tech}
+                rating={Number(dashboard.rating)}
+              />
+            );
+          })}
         </div>
       </div>
     </div>
