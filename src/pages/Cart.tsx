@@ -51,7 +51,7 @@ export default function Cart() {
                     <p className="text-sm text-gray-500">{item.tech}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-lg font-medium text-gray-900">${item.price}</p>
+                    <p className="text-lg font-medium text-gray-900">{item.price} TND</p>
                     <button 
                       onClick={() => handleRemoveFromCart(item.id)}
                       className="text-red-500 hover:text-red-700"
@@ -70,12 +70,12 @@ export default function Cart() {
               <div className="space-y-4">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Subtotal</span>
-                  <span className="text-gray-900">${total}</span>
+                  <span className="text-gray-900">{total} TND</span>
                 </div>
                 <div className="border-t pt-4">
                   <div className="flex justify-between font-medium">
                     <span className="text-gray-900">Total</span>
-                    <span className="text-indigo-600">${total}</span>
+                    <span className="text-indigo-600">{total} TND</span>
                   </div>
                 </div>
                 <button 

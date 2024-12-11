@@ -1,36 +1,65 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import TechFilter from '../components/TechFilter';
 import DashboardCard from '../components/DashboardCard';
 
-// Sample data - in a real app, this would come from an API
-const dashboards = [
-  {
-    id: '1',
-    title: 'Modern Analytics Dashboard',
-    description: 'A beautiful analytics dashboard with real-time charts and responsive design.',
-    price: 49,
-    image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=800',
-    tech: 'React',
-    rating: 4.8,
-  },
-  {
-    id: '2',
-    title: 'E-commerce Admin Panel',
-    description: 'Complete admin panel for managing your online store with inventory tracking.',
-    price: 69,
-    image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=800',
-    tech: 'Vue',
-    rating: 4.9,
-  },
-  // Add more sample dashboards...
-];
+interface Dashboard {
+  id: string;
+  name: string;
+  description: string;
+  price_coins: number;
+  demo_url: string;
+  preview_url: string;
+  features: string[];
+  rating: number;
+  tech: string;
+}
 
 export default function Home() {
   const [selectedTech, setSelectedTech] = useState('');
+  const [dashboards, setDashboards] = useState<Dashboard[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const apiUrl = import.meta.env.VITE_API_URL;
+
+  useEffect(() => {
+    const fetchDashboards = async () => {
+      try {
+        const response = await fetch(`${apiUrl}/dashboards`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch dashboards');
+        }
+        const data = await response.json();
+        setDashboards(data);
+      } catch (err) {
+        setError('Failed to load dashboards');
+        console.error('Error:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboards();
+  }, [apiUrl]);
 
   const filteredDashboards = selectedTech
     ? dashboards.filter(d => d.tech === selectedTech)
     : dashboards;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-xl text-gray-600">Loading...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-xl text-red-600">{error}</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -58,7 +87,13 @@ export default function Home() {
           {filteredDashboards.map(dashboard => (
             <DashboardCard
               key={dashboard.id}
-              {...dashboard}
+              id={dashboard.id}
+              title={dashboard.name}
+              description={dashboard.description}
+              price={dashboard.price_coins}
+              image={dashboard.preview_url}
+              tech={dashboard.tech}
+              rating={dashboard.rating || 0}
             />
           ))}
         </div>

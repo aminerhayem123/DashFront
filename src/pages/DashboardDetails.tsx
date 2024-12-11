@@ -1,37 +1,72 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Star, ShoppingCart, Code, Layout, Palette, Monitor } from 'lucide-react';
 import DashboardDemo from '../components/DashboardDemo';
 import { useCart } from '../contexts/CartContext';
 
-// Sample data - in a real app, this would come from an API
-const dashboard = {
-  id: '1',
-  title: 'Modern Analytics Dashboard',
-  description: 'A beautiful analytics dashboard with real-time charts and responsive design.',
-  price: 49,
-  image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=800',
-  tech: 'React',
-  rating: 4.8,
-  demoUrl: 'https://example.com/demo',
-  features: [
-    'Responsive Design',
-    'Real-time Charts',
-    'Dark/Light Mode',
-    'Multiple Layouts',
-    'Authentication Ready',
-    'API Integration',
-  ],
-  screenshots: [
-    'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=800',
-    'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=800',
-  ],
-};
+interface Dashboard {
+  id: string;
+  name: string;
+  description: string;
+  price_coins: number;
+  demo_url: string;
+  preview_url: string;
+  features: string[];
+  rating: number;
+  tech: string;
+  technical_details: {
+    backend: string;
+    frontend: string;
+    database: string;
+  };
+}
 
 export default function DashboardDetails() {
   const { id } = useParams();
   const [activeTab, setActiveTab] = useState<'preview' | 'demo'>('preview');
   const { dispatch, state } = useCart();
+  const [dashboard, setDashboard] = useState<Dashboard | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const apiUrl = import.meta.env.VITE_API_URL;
+
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      try {
+        const response = await fetch(`${apiUrl}/dashboards/${id}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch dashboard');
+        }
+        const data = await response.json();
+        setDashboard(data);
+      } catch (err) {
+        setError('Failed to load dashboard details');
+        console.error('Error:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchDashboard();
+    }
+  }, [id, apiUrl]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-xl text-gray-600">Loading...</div>
+      </div>
+    );
+  }
+
+  if (error || !dashboard) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-xl text-red-600">{error || 'Dashboard not found'}</div>
+      </div>
+    );
+  }
 
   const isInCart = state.items.some(item => item.id === dashboard.id);
 
@@ -40,9 +75,9 @@ export default function DashboardDetails() {
       type: 'ADD_TO_CART',
       payload: {
         id: dashboard.id,
-        title: dashboard.title,
-        price: dashboard.price,
-        image: dashboard.image,
+        title: dashboard.name,
+        price: dashboard.price_coins,
+        image: dashboard.preview_url,
         tech: dashboard.tech,
       },
     });
@@ -79,23 +114,13 @@ export default function DashboardDetails() {
             {activeTab === 'preview' ? (
               <div className="p-4">
                 <img
-                  src={dashboard.image}
-                  alt={dashboard.title}
+                  src={dashboard.preview_url}
+                  alt={dashboard.name}
                   className="w-full h-96 object-cover rounded-lg"
                 />
-                <div className="grid grid-cols-2 gap-4 mt-4">
-                  {dashboard.screenshots.map((screenshot, index) => (
-                    <img
-                      key={index}
-                      src={screenshot}
-                      alt={`Screenshot ${index + 1}`}
-                      className="w-full h-48 object-cover rounded-lg"
-                    />
-                  ))}
-                </div>
               </div>
             ) : (
-              <DashboardDemo demoUrl={dashboard.demoUrl} />
+              <DashboardDemo demoUrl={dashboard.demo_url} />
             )}
           </div>
         </div>
@@ -104,29 +129,24 @@ export default function DashboardDetails() {
         <div className="space-y-6">
           <div className="bg-white p-6 rounded-lg shadow-sm">
             <div className="flex items-center justify-between mb-4">
-              <h1 className="text-3xl font-bold text-gray-900">{dashboard.title}</h1>
+              <h1 className="text-3xl font-bold text-gray-900">{dashboard.name}</h1>
               <span className="bg-indigo-600 text-white px-3 py-1 rounded-full text-sm">
                 {dashboard.tech}
               </span>
             </div>
-
             <div className="flex items-center space-x-4 mb-4">
               <div className="flex items-center">
                 <Star className="h-5 w-5 text-yellow-400 fill-current" />
-                <span className="ml-1 text-gray-600">{dashboard.rating}</span>
+                <span className="ml-1 text-gray-600">{dashboard.rating || 0}</span>
               </div>
-              <span className="text-2xl font-bold text-indigo-600">${dashboard.price}</span>
+              <span className="text-2xl font-bold text-indigo-600">{dashboard.price_coins} TND</span>
             </div>
-
             <p className="text-gray-600 mb-6">{dashboard.description}</p>
-
             <button
               onClick={handleAddToCart}
               disabled={isInCart}
               className={`w-full py-3 px-4 rounded-md flex items-center justify-center ${
-                isInCart
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-indigo-600 hover:bg-indigo-700'
+                isInCart ? 'bg-gray-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700'
               } text-white`}
             >
               <ShoppingCart className="h-5 w-5 mr-2" />
@@ -151,15 +171,15 @@ export default function DashboardDetails() {
             <div className="grid grid-cols-2 gap-4">
               <div className="flex items-center space-x-2">
                 <Code className="h-5 w-5 text-indigo-600" />
-                <span>Clean Code</span>
+                <span>Backend: {dashboard.technical_details.backend}</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Palette className="h-5 w-5 text-indigo-600" />
-                <span>Customizable</span>
+                <span>Frontend: {dashboard.technical_details.frontend}</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Monitor className="h-5 w-5 text-indigo-600" />
-                <span>Responsive</span>
+                <span>Database: {dashboard.technical_details.database}</span>
               </div>
             </div>
           </div>
