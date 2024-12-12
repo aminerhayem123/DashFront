@@ -7,7 +7,6 @@ import SignUp from './pages/SignUp';
 import Cart from './pages/Cart';
 import Profile from './pages/Profile';
 import DashboardDetails from './pages/DashboardDetails';
-import Checkout from './pages/Checkout';
 import DashManager from './pages/DashManager';
 import { CartProvider } from './contexts/CartContext';
 import { AuthProvider } from './contexts/AuthContext';
@@ -32,14 +31,6 @@ const AppLayout = () => {
             element={
               <ProtectedRoute>
                 <Cart />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/checkout"
-            element={
-              <ProtectedRoute>
-                <Checkout />
               </ProtectedRoute>
             }
           />

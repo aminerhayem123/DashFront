@@ -14,7 +14,8 @@ interface CartState {
 
 type CartAction =
   | { type: 'ADD_TO_CART'; payload: CartItem }
-  | { type: 'REMOVE_FROM_CART'; payload: string };
+  | { type: 'REMOVE_FROM_CART'; payload: string }
+  | { type: 'CLEAR_CART' }; // Add the CLEAR_CART action type
 
 const CartContext = createContext<{
   state: CartState;
@@ -35,6 +36,11 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
       return {
         ...state,
         items: state.items.filter(item => item.id !== action.payload),
+      };
+    case 'CLEAR_CART': // Handle the CLEAR_CART action
+      return {
+        ...state,
+        items: [],
       };
     default:
       return state;
