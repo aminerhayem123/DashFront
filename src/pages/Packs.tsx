@@ -107,6 +107,7 @@ const Packs: React.FC = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
         body: JSON.stringify(purchaseDetails),
       });
@@ -126,7 +127,7 @@ const Packs: React.FC = () => {
       console.error('Error during purchase:', error);
       alert('Something went wrong!');
     }
-  };  
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 py-16 px-4 sm:px-6 lg:px-8">

@@ -1,16 +1,72 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { Plus, LogOut, LayoutDashboard } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import AddDashboardModal from './AddDashboardModal';
+
 const DashManager = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  interface PurchaseRequest {
+    id: string;
+    user_name: string;
+    user_email: string;
+    pack_name: string;
+    status: string;
+  }
+
+  const [purchaseRequests, setPurchaseRequests] = useState<PurchaseRequest[]>([]);
   const navigate = useNavigate();
   const { logout } = useAuth();
+  const apiUrl = import.meta.env.VITE_API_URL;
+
+  useEffect(() => {
+    const fetchPurchaseRequests = async () => {
+      try {
+        const response = await fetch(`${apiUrl}/purchase-requests`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        });
+        if (!response.ok) {
+          throw new Error('Failed to fetch purchase requests');
+        }
+        const data = await response.json();
+        setPurchaseRequests(data);
+      } catch (error) {
+        console.error('Error fetching purchase requests:', error);
+      }
+    };
+
+    fetchPurchaseRequests();
+  }, [apiUrl]);
+
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
+
+  const handleUpdateRequest = async (requestId: string, status: string) => {
+    try {
+      const response = await fetch(`${apiUrl}/purchase-requests/${requestId}/${status}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update purchase request');
+      }
+
+      setPurchaseRequests((prevRequests) =>
+        prevRequests.filter((request) => request.id !== requestId)
+      );
+    } catch (error) {
+      console.error('Error updating purchase request:', error);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* Custom Navigation Bar */}
@@ -51,13 +107,46 @@ const DashManager = () => {
               No dashboards added yet. Click "Add Dashboard" to create your first dashboard.
             </div>
           </div>
+          <div className="bg-white shadow-sm rounded-lg divide-y mt-8">
+            <div className="p-6 text-center text-gray-500">
+              <h2 className="text-xl font-bold mb-4">Purchase Requests</h2>
+              {purchaseRequests.length === 0 ? (
+                <p>No purchase requests found.</p>
+              ) : (
+                <ul>
+                  {purchaseRequests.map((request) => (
+                    <li key={request.id} className="flex justify-between items-center p-4 border-b">
+                      <div>
+                        <p className="font-medium">{request.user_name}</p>
+                        <p className="text-sm text-gray-600">{request.user_email}</p>
+                        <p className="text-sm text-gray-600">Pack: {request.pack_name}</p>
+                        <p className="text-sm text-gray-600">Status: {request.status}</p>
+                      </div>
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => handleUpdateRequest(request.id, 'approve')}
+                          className="px-4 py-2 bg-green-600 text-white rounded-md"
+                        >
+                          Accept
+                        </button>
+                        <button
+                          onClick={() => handleUpdateRequest(request.id, 'reject')}
+                          className="px-4 py-2 bg-red-600 text-white rounded-md"
+                        >
+                          Refuse
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
         </div>
       </div>
-      <AddDashboardModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-      />
+      <AddDashboardModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   );
 };
+
 export default DashManager;
