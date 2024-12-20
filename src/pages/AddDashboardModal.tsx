@@ -1,281 +1,182 @@
 import React, { useState } from 'react';
-import { X } from 'lucide-react';
-
-interface Feature {
-  id: string;
-  text: string;
-}
-
-interface TechnicalDetail {
-  id: string;
-  text: string;
-}
 
 interface AddDashboardModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const technologies = [
-  'React',
-  'Vue',
-  'Angular',
-  'React + TypeScript',
-  'Bootstrap 5',
-  'HTML/CSS',
-  'Tailwind CSS',
-];
-
-export default function AddDashboardModal({ isOpen, onClose }: AddDashboardModalProps) {
-  const [title, setTitle] = useState('');
+const AddDashboardModal: React.FC<AddDashboardModalProps> = ({ isOpen, onClose }) => {
+  const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [price, setPrice] = useState('');
-  const [tech, setTech] = useState(technologies[0]);
-  const [mainImage, setMainImage] = useState('');
-  const [screenshots, setScreenshots] = useState<string[]>([]);
-  const [features, setFeatures] = useState<Feature[]>([{ id: '1', text: '' }]);
-  const [technicalDetails, setTechnicalDetails] = useState<TechnicalDetail[]>([
-    { id: '1', text: '' },
-  ]);
+  const [priceCoins, setPriceCoins] = useState('');
+  const [demoUrl, setDemoUrl] = useState('');
+  const [previewUrl, setPreviewUrl] = useState('');
+  const [features, setFeatures] = useState('');
+  const [technicalDetails, setTechnicalDetails] = useState('');
+  const [tech, setTech] = useState('');
+  const [rating, setRating] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const apiUrl = import.meta.env.VITE_API_URL;
+
+  interface DashboardDetails {
+    name: string;
+    description: string;
+    price_coins: number;
+    demo_url: string;
+    preview_url: string;
+    features: string[];
+    technical_details: Record<string, any>;
+    tech: string;
+    rating: number;
+  }
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Handle dashboard creation logic here
-    console.log({
-      title,
+
+    let parsedTechnicalDetails;
+    try {
+      parsedTechnicalDetails = JSON.parse(technicalDetails);
+    } catch (error) {
+      alert('Technical details must be valid JSON');
+      return;
+    }
+
+    const dashboardDetails: DashboardDetails = {
+      name,
       description,
-      price,
+      price_coins: parseInt(priceCoins, 10),
+      demo_url: demoUrl,
+      preview_url: previewUrl,
+      features: features.split(',').map((feature) => feature.trim()),
+      technical_details: parsedTechnicalDetails,
       tech,
-      mainImage,
-      screenshots,
-      features,
-      technicalDetails,
-    });
-    onClose();
-  };
+      rating: parseFloat(rating),
+    };
 
-  const addFeature = () => {
-    setFeatures([...features, { id: Date.now().toString(), text: '' }]);
-  };
+    try {
+      const response = await fetch(`${apiUrl}/add_dashboard`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify(dashboardDetails),
+      });
 
-  const removeFeature = (id: string) => {
-    setFeatures(features.filter(feature => feature.id !== id));
-  };
+      if (!response.ok) {
+        throw new Error('Failed to add dashboard');
+      }
 
-  const updateFeature = (id: string, text: string) => {
-    setFeatures(
-      features.map(feature =>
-        feature.id === id ? { ...feature, text } : feature
-      )
-    );
-  };
-
-  const addTechnicalDetail = () => {
-    setTechnicalDetails([
-      ...technicalDetails,
-      { id: Date.now().toString(), text: '' },
-    ]);
-  };
-
-  const removeTechnicalDetail = (id: string) => {
-    setTechnicalDetails(technicalDetails.filter(detail => detail.id !== id));
-  };
-
-  const updateTechnicalDetail = (id: string, text: string) => {
-    setTechnicalDetails(
-      technicalDetails.map(detail =>
-        detail.id === id ? { ...detail, text } : detail
-      )
-    );
+      onClose();
+    } catch (error) {
+      console.error('Error adding dashboard:', error);
+      alert('Something went wrong!');
+    }
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center p-6 border-b">
-          <h2 className="text-xl font-semibold">Add New Dashboard</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-500"
-          >
-            <X className="h-6 w-6" />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg w-full max-w-md relative">
+        <button onClick={onClose} className="absolute top-4 right-4 text-gray-600 text-xl">
+          &times;
+        </button>
+        <h2 className="text-2xl font-bold mb-4 p-8">Add Dashboard</h2>
+        <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto px-8 pb-8">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Title
-            </label>
+            <label className="block text-sm font-medium text-gray-700">Name</label>
             <input
               type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="mt-1 block w-full border border-gray-300 rounded-lg p-2"
               required
             />
           </div>
-
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Description
-            </label>
+            <label className="block text-sm font-medium text-gray-700">Description</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              className="mt-1 block w-full border border-gray-300 rounded-lg p-2"
               required
             />
           </div>
-
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Technology
-            </label>
-            <select
-              value={tech}
-              onChange={(e) => setTech(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md"
-              required
-            >
-              {technologies.map((tech) => (
-                <option key={tech} value={tech}>
-                  {tech}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Price ($)
-            </label>
+            <label className="block text-sm font-medium text-gray-700">Price (Coins)</label>
             <input
               type="number"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              value={priceCoins}
+              onChange={(e) => setPriceCoins(e.target.value)}
+              className="mt-1 block w-full border border-gray-300 rounded-lg p-2"
               required
-              min="0"
-              step="0.01"
             />
           </div>
-
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Main Image URL
-            </label>
+            <label className="block text-sm font-medium text-gray-700">Demo URL</label>
             <input
               type="url"
-              value={mainImage}
-              onChange={(e) => setMainImage(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              value={demoUrl}
+              onChange={(e) => setDemoUrl(e.target.value)}
+              className="mt-1 block w-full border border-gray-300 rounded-lg p-2"
               required
             />
           </div>
-
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Screenshot URLs (one per line)
-            </label>
-            <textarea
-              value={screenshots.join('\n')}
-              onChange={(e) => setScreenshots(e.target.value.split('\n'))}
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+            <label className="block text-sm font-medium text-gray-700">Preview URL</label>
+            <input
+              type="url"
+              value={previewUrl}
+              onChange={(e) => setPreviewUrl(e.target.value)}
+              className="mt-1 block w-full border border-gray-300 rounded-lg p-2"
+              required
             />
           </div>
-
           <div>
-            <div className="flex justify-between items-center mb-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Features
-              </label>
-              <button
-                type="button"
-                onClick={addFeature}
-                className="text-sm text-indigo-600 hover:text-indigo-500"
-              >
-                Add Feature
-              </button>
-            </div>
-            <div className="space-y-2">
-              {features.map((feature) => (
-                <div key={feature.id} className="flex space-x-2">
-                  <input
-                    type="text"
-                    value={feature.text}
-                    onChange={(e) => updateFeature(feature.id, e.target.value)}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md"
-                    placeholder="Enter feature"
-                    required
-                  />
-                  {features.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeFeature(feature.id)}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      <X className="h-5 w-5" />
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
+            <label className="block text-sm font-medium text-gray-700">Features (comma separated)</label>
+            <input
+              type="text"
+              value={features}
+              onChange={(e) => setFeatures(e.target.value)}
+              className="mt-1 block w-full border border-gray-300 rounded-lg p-2"
+              required
+            />
           </div>
-
           <div>
-            <div className="flex justify-between items-center mb-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Technical Details
-              </label>
-              <button
-                type="button"
-                onClick={addTechnicalDetail}
-                className="text-sm text-indigo-600 hover:text-indigo-500"
-              >
-                Add Detail
-              </button>
-            </div>
-            <div className="space-y-2">
-              {technicalDetails.map((detail) => (
-                <div key={detail.id} className="flex space-x-2">
-                  <input
-                    type="text"
-                    value={detail.text}
-                    onChange={(e) => updateTechnicalDetail(detail.id, e.target.value)}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md"
-                    placeholder="Enter technical detail"
-                    required
-                  />
-                  {technicalDetails.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeTechnicalDetail(detail.id)}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      <X className="h-5 w-5" />
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
+            <label className="block text-sm font-medium text-gray-700">Technical Details (JSON format)</label>
+            <textarea
+              value={technicalDetails}
+              onChange={(e) => setTechnicalDetails(e.target.value)}
+              className="mt-1 block w-full border border-gray-300 rounded-lg p-2"
+              required
+            />
           </div>
-
-          <div className="flex justify-end space-x-4 pt-4 border-t">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
-            >
-              Cancel
-            </button>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Tech</label>
+            <input
+              type="text"
+              value={tech}
+              onChange={(e) => setTech(e.target.value)}
+              className="mt-1 block w-full border border-gray-300 rounded-lg p-2"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Rating</label>
+            <input
+              type="number"
+              step="0.1"
+              value={rating}
+              onChange={(e) => setRating(e.target.value)}
+              className="mt-1 block w-full border border-gray-300 rounded-lg p-2"
+              required
+            />
+          </div>
+          <div className="sticky bottom-0 bg-white pt-4 pb-4">
             <button
               type="submit"
-              className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+              className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700"
             >
               Add Dashboard
             </button>
@@ -284,4 +185,6 @@ export default function AddDashboardModal({ isOpen, onClose }: AddDashboardModal
       </div>
     </div>
   );
-}
+};
+
+export default AddDashboardModal;
